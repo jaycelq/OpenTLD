@@ -1,8 +1,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/legacy/legacy.hpp>
+#include <opencv2/video/tracking.hpp>
 #include "tld_utils.h"
 #include "LKTracker.h"
 #include "FerNNClassifier.h"
+#include "CompressiveTracker.h"
 #include <fstream>
 
 
@@ -111,6 +113,15 @@ private:
   std::vector<int> bad_boxes; //indexes of bboxes with overlap < 0.2
   BoundingBox bbhull; // hull of good_boxes
   BoundingBox best_box; // maximum overlapping bbox
+  
+  //Compressive Tracking
+  CompressiveTracker ct;
+    
+  //Kalman Filter
+  cv::KalmanFilter kf;
+  cv::Mat_<float> measurement;
+public:
+  cv::Point kfPoint;
 
 public:
   //Constructors
@@ -118,7 +129,7 @@ public:
   TLD(const cv::FileNode& file);
   void read(const cv::FileNode& file);
   //Methods
-  void init(const cv::Mat& frame1,const cv::Rect &box, FILE* bb_file);
+  void init(cv::Mat& frame1,cv::Rect &box, FILE* bb_file);
   void generatePositiveData(const cv::Mat& frame, int num_warps);
   void generateNegativeData(const cv::Mat& frame);
   void processFrame(const cv::Mat& img1,const cv::Mat& img2,std::vector<cv::Point2f>& points1,std::vector<cv::Point2f>& points2,

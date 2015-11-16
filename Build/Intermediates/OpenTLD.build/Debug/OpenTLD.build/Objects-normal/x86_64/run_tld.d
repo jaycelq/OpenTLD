@@ -32,4 +32,5 @@ dependencies: \
   /Users/liqiang/Desktop/TLDTracking/OpenTLD/OpenTLD/include/TLD.h \
   /usr/local/include/opencv2/legacy/legacy.hpp \
   /Users/liqiang/Desktop/TLDTracking/OpenTLD/OpenTLD/include/LKTracker.h \
-  /Users/liqiang/Desktop/TLDTracking/OpenTLD/OpenTLD/include/FerNNClassifier.h
+  /Users/liqiang/Desktop/TLDTracking/OpenTLD/OpenTLD/include/FerNNClassifier.h \
+  /Users/liqiang/Desktop/TLDTracking/OpenTLD/OpenTLD/include/CompressiveTracker.h

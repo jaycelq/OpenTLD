@@ -43,7 +43,24 @@ void TLD::read(const FileNode& file){
   classifier.read(file);
 }
 
-void TLD::init(const Mat& frame1,const Rect& box,FILE* bb_file){
+void TLD::init(Mat& frame1,Rect& box,FILE* bb_file){
+  kf = KalmanFilter(4, 2, 0);
+  kf.transitionMatrix = *(Mat_<float>(4, 4) << 1,0,1,0,   0,1,0,1,  0,0,1,0,  0,0,0,1);
+  kf.statePre.at<float>(0) = box.x + 0.5 * box.width;
+  kf.statePre.at<float>(1) = box.y + 0.5 * box.height;
+  kf.statePre.at<float>(2) = 0;
+  kf.statePre.at<float>(3) = 1;
+  
+  setIdentity(kf.measurementMatrix);
+  setIdentity(kf.processNoiseCov, Scalar::all(1e-4));
+  setIdentity(kf.measurementNoiseCov, Scalar::all(1e-1));
+  setIdentity(kf.errorCovPost, Scalar::all(.1));
+  
+  measurement = Mat_<float>(2, 1);
+  measurement.setTo(Scalar(0));
+  
+  ct.init(frame1, box);
+  
   //bb_file = fopen("bounding_boxes.txt","w");
   //Get Bounding Boxes
     buildGrid(frame1,box);
@@ -230,6 +247,18 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   int confident_detections=0;
   clock_t tStart;
   int didx; //detection index
+  
+  /// Kalman Filter
+  if (lastboxfound) {
+    Mat prediction = kf.predict();
+    measurement(0) = lastbox.x + lastbox.width * 0.5;
+    measurement(1) = lastbox.y + lastbox.height * 0.5;
+    
+    Mat estimated = kf.correct(measurement);
+    kfPoint.x = estimated.at<float>(0);
+    kfPoint.y = estimated.at<float>(1);
+  }
+  
   ///Track
   if(lastboxfound && tl){
       tStart = clock();

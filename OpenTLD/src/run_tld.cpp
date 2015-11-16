@@ -135,8 +135,9 @@ int main(int argc, char * argv[]){
 GETBOUNDINGBOX:
   while(!gotBB)
   {
-    if (!fromfile){
+    if (!fromfile || (fromfile && !drawing_box)){
       capture >> frame;
+      frame.copyTo(first);
     }
     else
       first.copyTo(frame);
@@ -169,6 +170,7 @@ GETBOUNDINGBOX:
   int detections = 1;
 REPEAT:
   while(capture.read(frame)){
+    clock_t  tStart = clock();
     //get frame
     cvtColor(frame, current_gray, CV_RGB2GRAY);
     //Process Frame
@@ -178,6 +180,7 @@ REPEAT:
       drawPoints(frame,pts1);
       drawPoints(frame,pts2,Scalar(0,255,0));
       drawBox(frame,pbox);
+      circle(frame,tld.kfPoint,2,Scalar(0,0, 0),5);
       detections++;
     }
     //Display
@@ -188,6 +191,7 @@ REPEAT:
     pts2.clear();
     frames++;
     printf("Detection rate: %d/%d\n",detections,frames);
+    printf("FPS: %.2f\n", CLOCKS_PER_SEC/(double)(clock() - tStart));
     if (cvWaitKey(33) == 'q')
       break;
   }
